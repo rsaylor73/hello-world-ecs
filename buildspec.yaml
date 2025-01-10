@@ -10,20 +10,24 @@ phases:
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 216989126682.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=$(aws ecr describe-repositories --repository-names $IMAGE_REPO_NAME --output text --query "repositories[0].repositoryUri")
       - echo test $REPOSITORY_URI
-      - IMAGE_TAG=$(echo release-$CODEBUILD_RESOLVED_SOURCE_VERSION)
+      #- IMAGE_TAG=$(echo release-$CODEBUILD_RESOLVED_SOURCE_VERSION)
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t app_repo .
-      - docker tag app_repo:latest $REPOSITORY_URI:latest
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      #- docker build -t app_repo .
+      #- docker tag app_repo:latest $REPOSITORY_URI:latest
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:latest
+      #- docker push $REPOSITORY_URI:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '[{"name":"example","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
+      #- printf '[{"name":"example","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
