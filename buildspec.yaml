@@ -16,14 +16,14 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t app_repo .
-      - docker tag app_repo:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag app_repo:latest $REPOSITORY_URI:latest
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - echo Writing image definitions file...
-      - printf '[{"name":"example","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"example","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
       - cat imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
